@@ -102,6 +102,86 @@ function adminSnapshot() {
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { maxHttpBufferSize: 6e6 });
+app.set('trust proxy', 1);
+
+const SHARE_FILES = {
+  '/': 'index.html',
+  '/admin': 'admin.html',
+  '/led': 'led.html',
+  '/vip': 'vip.html',
+  '/cheer': 'cheer.html',
+};
+const escAttr = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function shareOrigin(req) {
+  const configured = String(S.settings.publicUrl || '').trim().replace(/\/$/, '');
+  if (/^https?:\/\//i.test(configured)) return configured;
+  return `${req.protocol}://${req.get('host')}`;
+}
+function shareMeta(pathname) {
+  const event = String(S.settings.eventName || 'Ignition Challenge').slice(0, 60);
+  const coin = String(S.settings.coinName || 'Sparks').slice(0, 20);
+  const pages = {
+    '/': ['Ignition Arena', `Live RoboWar board for ${event}. VIPs bet ${coin}, the crowd cheers, and the LED wall follows the fight. No real money.`],
+    '/cheer': [`Cheer live — ${event}`, `Pick a team and tap to cheer at ${event}. Your taps show up on the LED wall.`],
+    '/vip': [`VIP lounge — ${event}`, `Back a robot with ${coin} at ${event}. Virtual coins only. No real money.`],
+    '/admin': ['Admin — Ignition Arena', `Run matches, open betting, call the winner, and control the LED wall for ${event}.`],
+    '/led': [`LED wall — ${event}`, `Full-screen live board for ${event}.`],
+  };
+  const [title, description] = pages[pathname] || pages['/'];
+  return { title, description };
+}
+function shareBlock(req) {
+  const { title, description } = shareMeta(req.path);
+  const origin = shareOrigin(req);
+  const pageUrl = origin + (req.path === '/' ? '' : req.path);
+  const image = `${origin}/og.png`;
+  const t = escAttr(title);
+  const d = escAttr(description);
+  const u = escAttr(pageUrl);
+  const img = escAttr(image);
+  const alt = escAttr('Ignition Arena live RoboWar board');
+  const secure = /^https:\/\//i.test(image) ? `\n<meta property="og:image:secure_url" content="${img}">` : '';
+  return `<!-- share -->
+<meta name="description" content="${d}">
+<meta property="og:locale" content="en_US">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ignition Arena">
+<meta property="og:title" content="${t}">
+<meta property="og:description" content="${d}">
+<meta property="og:url" content="${u}">
+<meta property="og:image" content="${img}">${secure}
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="${alt}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${t}">
+<meta name="twitter:description" content="${d}">
+<meta name="twitter:image" content="${img}">
+<meta name="twitter:image:alt" content="${alt}">
+<!-- /share -->`;
+}
+function withShareTags(html, req) {
+  const block = shareBlock(req);
+  const { title } = shareMeta(req.path);
+  let out = html.replace(/\s*<!-- share -->[\s\S]*?<!-- \/share -->/, '');
+  out = out.replace(/<title>[^<]*<\/title>/i, `<title>${escAttr(title)}</title>`);
+  const charset = out.match(/<meta\s+charset=["']?[^"'>\s]+["']?\s*\/?>/i);
+  if (charset) {
+    const i = out.indexOf(charset[0]) + charset[0].length;
+    return `${out.slice(0, i)}\n${block}${out.slice(i)}`;
+  }
+  return out.replace(/<head[^>]*>/i, (m) => `${m}\n${block}`);
+}
+
+app.get(Object.keys(SHARE_FILES), (req, res, next) => {
+  const file = path.join(__dirname, 'public', SHARE_FILES[req.path]);
+  fs.readFile(file, 'utf8', (err, html) => {
+    if (err) return next();
+    res.type('html').send(withShareTags(html, req));
+  });
+});
 
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
 app.get('/qr.svg', async (req, res) => {
