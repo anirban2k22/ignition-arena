@@ -6,7 +6,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "reset": "node server.js --reset"
+    "reset": "node server.js --reset",
+    "test": "node --test"
   },
   "dependencies": {
     "express": "^4.21.2",
