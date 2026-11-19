@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ignition Arena</title>
+<link rel="stylesheet" href="/css/theme.css">
+<style>
+body{background-color:var(--bg);background-image:radial-gradient(900px 500px at 50% -10%,#FF4D1A22,transparent 60%),linear-gradient(#11151F 1px,transparent 1px),linear-gradient(90deg,#11151F 1px,transparent 1px);background-size:auto,40px 40px,40px 40px}
+.wrap{max-width:1000px;margin:0 auto;padding:60px 22px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(40px,7vw,72px);line-height:.95;margin:22px 0 10px}
+h1 span{color:var(--orange);display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-top:36px}
+.c{display:flex;flex-direction:column;gap:8px;padding:22px;border-radius:18px;background:var(--panel);border:1px solid var(--line);text-decoration:none;color:var(--text);transition:border-color .2s,transform .15s}
+.c:hover{border-color:var(--cyan);transform:translateY(-2px)}
+.c b{font-family:var(--display);font-size:18px}
+.c span{color:var(--muted);font-size:14px;line-height:1.45}
+.c .k{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--cyan)}
+</style>
+</head>
+<body><div class="wrap">
+<div id="logo"></div>
+<div class="eyebrow" style="color:var(--cyan)">Ultimate Tech League</div>
+<h1>IGNITION<span>ARENA</span></h1>
+<p class="muted" style="max-width:560px;line-height:1.6">Live VIP coin betting, audience cheering and LED wall control for the RoboWar fights. No real money. Just bragging rights.</p>
+<div class="cards">
+  <a class="c" href="/admin"><span class="k">CONTROL</span><b>Admin</b><span>Run matches, betting, results and the LED wall.</span></a>
+  <a class="c" href="/led" target="_blank" rel="noopener"><span class="k">BIG SCREEN</span><b>LED wall</b><span>Open full screen on the laptop connected to the LED.</span></a>
+  <a class="c" href="/cheer"><span class="k">PHONES</span><b>Audience</b><span>Fans scan the QR, pick a team and tap to cheer.</span></a>
+  <a class="c" href="/admin"><span class="k">TABLETS</span><b>VIP lounge</b><span>Each VIP gets a private link. Find them in Admin, VIPs.</span></a>
+</div></div>
+<script src="/js/common.js"></script>
+<script>document.getElementById('logo').innerHTML = IA.flame(70);</script>
+</body>
+</html>
